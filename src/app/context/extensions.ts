@@ -1,7 +1,7 @@
 import { createSignal } from "solid-js";
 
 import { applyEdits, modify } from "jsonc-parser";
-import { currentLocale, t } from "../../i18n";
+import { useI18n } from "../../i18n";
 
 import type { Client, CuratedPackage, Mode, PluginScope, ReloadReason, SkillCard } from "../types";
 import { addOpencodeCacheHint, isTauriRuntime } from "../utils";
@@ -36,7 +36,8 @@ export function createExtensionsStore(options: {
   onNotionSkillInstalled?: () => void;
 }) {
   // Translation helper that uses current language from i18n
-  const translate = (key: string) => t(key, currentLocale());
+  const [t] = useI18n();
+  const translate = (key: string) => t(key);
 
   const [skills, setSkills] = createSignal<SkillCard[]>([]);
   const [skillsStatus, setSkillsStatus] = createSignal<string | null>(null);
@@ -127,10 +128,10 @@ export function createExtensionsStore(options: {
 
       const next: SkillCard[] = Array.isArray(data)
         ? data.map((entry) => ({
-            name: entry.name,
-            description: entry.description,
-            path: formatSkillPath(entry.location),
-          }))
+          name: entry.name,
+          description: entry.description,
+          path: formatSkillPath(entry.location),
+        }))
         : [];
 
       setSkills(next);
@@ -326,7 +327,7 @@ export function createExtensionsStore(options: {
       await refreshSkills({ force: true });
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
-      options.setError(addOpencodeCacheHint(message));
+      options.setError(addOpencodeCacheHint(message, t));
     } finally {
       options.setBusy(false);
     }
@@ -377,7 +378,7 @@ export function createExtensionsStore(options: {
       await refreshSkills({ force: true });
     } catch (e) {
       const message = e instanceof Error ? e.message : translate("skills.unknown_error");
-      options.setError(addOpencodeCacheHint(message));
+      options.setError(addOpencodeCacheHint(message, t));
     } finally {
       options.setBusy(false);
     }

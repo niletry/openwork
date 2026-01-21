@@ -1,7 +1,7 @@
 import { For, Show, createMemo } from "solid-js";
 
 import { Check, Plus, Search } from "lucide-solid";
-import { t, currentLocale } from "../../i18n";
+import { useI18n } from "../../i18n";
 
 import type { WorkspaceInfo } from "../lib/tauri";
 
@@ -15,7 +15,8 @@ export default function WorkspacePicker(props: {
   onSelect: (workspaceId: string) => void;
   onCreateNew: () => void;
 }) {
-  const translate = (key: string) => t(key, currentLocale());
+  const [t] = useI18n();
+  const translate = (key: string) => t(key);
 
   const filtered = createMemo(() => {
     const query = props.search.trim().toLowerCase();
@@ -58,11 +59,10 @@ export default function WorkspacePicker(props: {
                     props.onSelect(ws.id);
                     props.onClose();
                   }}
-                  class={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    props.activeWorkspaceId === ws.id
-                      ? "bg-gray-4 text-gray-12"
-                      : "text-gray-11 hover:text-gray-12 hover:bg-gray-4/50"
-                  }`}
+                  class={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${props.activeWorkspaceId === ws.id
+                    ? "bg-gray-4 text-gray-12"
+                    : "text-gray-11 hover:text-gray-12 hover:bg-gray-4/50"
+                    }`}
                 >
                   <div class="flex-1 text-left min-w-0">
                     <div class="font-medium truncate">{ws.name}</div>

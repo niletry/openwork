@@ -196,23 +196,23 @@ export function normalizeEvent(raw: unknown): OpencodeEvent | null {
   return null;
 }
 
-export function formatRelativeTime(timestampMs: number) {
+export function formatRelativeTime(timestampMs: number, t: (key: string, args?: Record<string, string>) => string) {
   const delta = Date.now() - timestampMs;
 
   if (delta < 0) {
-    return "just now";
+    return t("utils.just_now");
   }
 
   if (delta < 60_000) {
-    return `${Math.max(1, Math.round(delta / 1000))}s ago`;
+    return t("utils.seconds_ago", { s: String(Math.max(1, Math.round(delta / 1000))) });
   }
 
   if (delta < 60 * 60_000) {
-    return `${Math.max(1, Math.round(delta / 60_000))}m ago`;
+    return t("utils.minutes_ago", { m: String(Math.max(1, Math.round(delta / 60_000))) });
   }
 
   if (delta < 24 * 60 * 60_000) {
-    return `${Math.max(1, Math.round(delta / (60 * 60_000)))}h ago`;
+    return t("utils.hours_ago", { h: String(Math.max(1, Math.round(delta / (60 * 60_000)))) });
   }
 
   return new Date(timestampMs).toLocaleDateString();
@@ -233,7 +233,7 @@ export function safeParseJson<T>(raw: string): T | null {
   }
 }
 
-export function addOpencodeCacheHint(message: string) {
+export function addOpencodeCacheHint(message: string, t: (key: string) => string) {
   const lower = message.toLowerCase();
   const cacheSignals = [
     ".cache/opencode",
@@ -244,7 +244,7 @@ export function addOpencodeCacheHint(message: string) {
   ];
 
   if (cacheSignals.some((signal) => lower.includes(signal)) && lower.includes("enoent")) {
-    return `${message}\n\nOpenCode cache looks corrupted. Use Repair cache in Settings to rebuild it.`;
+    return `${message}\n\n${t("utils.cache_corrupted")}`;
   }
 
   return message;
@@ -430,10 +430,10 @@ export function groupMessageParts(parts: Part[], messageId: string): MessageGrou
   return groups;
 }
 
-export function summarizeStep(part: Part): { title: string; detail?: string } {
+export function summarizeStep(part: Part, t: (key: string, args?: any) => string): { title: string; detail?: string } {
   if (part.type === "tool") {
     const record = part as any;
-    const toolName = record.tool ? String(record.tool) : "Tool";
+    const toolName = record.tool ? String(record.tool) : t("utils.tool");
     const state = record.state ?? {};
     const title = state.title ? String(state.title) : toolName;
     const output = typeof state.output === "string" && state.output.trim() ? state.output.trim() : null;
@@ -447,20 +447,20 @@ export function summarizeStep(part: Part): { title: string; detail?: string } {
   if (part.type === "reasoning") {
     const record = part as any;
     const text = typeof record.text === "string" ? record.text.trim() : "";
-    if (!text) return { title: "Planning" };
+    if (!text) return { title: t("utils.planning") };
     const short = text.length > 120 ? `${text.slice(0, 120)}…` : text;
-    return { title: "Thinking", detail: short };
+    return { title: t("utils.thinking"), detail: short };
   }
 
   if (part.type === "step-start" || part.type === "step-finish") {
     const reason = (part as any).reason;
     return {
-      title: part.type === "step-start" ? "Step started" : "Step finished",
+      title: part.type === "step-start" ? t("utils.step_started") : t("utils.step_finished"),
       detail: reason ? String(reason) : undefined,
     };
   }
 
-  return { title: "Step" };
+  return { title: t("utils.step") };
 }
 
 export function deriveArtifacts(list: MessageWithParts[]): ArtifactItem[] {

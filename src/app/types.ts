@@ -100,6 +100,10 @@ export type SkillCard = {
   description?: string;
 };
 
+export type Skill = SkillCard & {
+  version?: string;
+};
+
 export type CuratedPackage = {
   name: string;
   source: string;

@@ -20,6 +20,8 @@ import TemplateModal from "./components/template-modal";
 import WorkspacePicker from "./components/workspace-picker";
 import CreateWorkspaceModal from "./components/create-workspace-modal";
 import McpAuthModal from "./components/mcp-auth-modal";
+import LanguagePickerModal from "./components/language-picker-modal";
+
 import OnboardingView from "./pages/onboarding";
 import DashboardView from "./pages/dashboard";
 import SessionView from "./pages/session";
@@ -67,7 +69,7 @@ import {
   groupMessageParts,
   isTauriRuntime,
 } from "./utils";
-import { currentLocale, setLocale, t, type Language } from "../i18n";
+import { useI18n, type Locale } from "../i18n";
 import {
   isWindowsPlatform,
   lastUserModelFromMessages,
@@ -110,6 +112,8 @@ export default function App() {
     }
   })();
 
+  const [t, { locale }] = useI18n();
+
   const [view, _setView] = createSignal<View>(initialView);
   const [creatingSession, setCreatingSession] = createSignal(false);
   const [sessionViewLockUntil, setSessionViewLockUntil] = createSignal(0);
@@ -128,6 +132,8 @@ export default function App() {
     createSignal<OnboardingStep>("mode");
   const [rememberModeChoice, setRememberModeChoice] = createSignal(false);
   const [tab, setTab] = createSignal<DashboardTab>("home");
+  const [createWorkspaceOpen, setCreateWorkspaceOpen] = createSignal(false);
+  const [languagePickerOpen, setLanguagePickerOpen] = createSignal(false);
   const [themeMode, setThemeMode] = createSignal<ThemeMode>(getInitialThemeMode());
 
   const [engineSource, setEngineSource] = createSignal<"path" | "sidecar">(
@@ -138,6 +144,7 @@ export default function App() {
   const [clientDirectory, setClientDirectory] = createSignal("");
 
   const [client, setClient] = createSignal<Client | null>(null);
+  const [defaultModel, setDefaultModel] = createSignal<ModelRef>(DEFAULT_MODEL);
   const [connectedVersion, setConnectedVersion] = createSignal<string | null>(
     null
   );
@@ -203,6 +210,22 @@ export default function App() {
     setTodos,
     setPendingPermissions,
   } = sessionStore;
+
+  const selectedSessionModel = createMemo<ModelRef>(() => {
+    const id = selectedSessionId();
+    if (!id) return defaultModel();
+
+    const override = sessionModelOverrideById()[id];
+    if (override) return override;
+
+    const known = sessionModelById()[id];
+    if (known) return known;
+
+    const fromMessages = lastUserModelFromMessages(messages());
+    if (fromMessages) return fromMessages;
+
+    return defaultModel();
+  });
 
   const demoState = createDemoState({
     sessions,
@@ -282,7 +305,7 @@ export default function App() {
       );
     } catch (e) {
       const message = e instanceof Error ? e.message : safeStringify(e);
-      setError(addOpencodeCacheHint(message));
+      setError(addOpencodeCacheHint(message, t));
     } finally {
       setBusy(false);
       setBusyLabel(null);
@@ -321,7 +344,7 @@ export default function App() {
   const [mcpAuthModalOpen, setMcpAuthModalOpen] = createSignal(false);
   const [mcpAuthEntry, setMcpAuthEntry] = createSignal<(typeof MCP_QUICK_CONNECT)[number] | null>(null);
 
-  let markReloadRequiredRef: (reason: ReloadReason) => void = () => {};
+  let markReloadRequiredRef: (reason: ReloadReason) => void = () => { };
 
   const extensionsStore = createExtensionsStore({
     client,
@@ -382,7 +405,7 @@ export default function App() {
     string[]
   >([]);
 
-  const [defaultModel, setDefaultModel] = createSignal<ModelRef>(DEFAULT_MODEL);
+
   const [modelPickerOpen, setModelPickerOpen] = createSignal(false);
   const [modelPickerTarget, setModelPickerTarget] = createSignal<
     "session" | "default"
@@ -392,7 +415,7 @@ export default function App() {
   const [showThinking, setShowThinking] = createSignal(false);
   const [modelVariant, setModelVariant] = createSignal<string | null>(null);
 
-  let loadWorkspaceTemplatesRef: (options?: { workspaceRoot?: string; quiet?: boolean }) => Promise<void> = async () => {};
+  let loadWorkspaceTemplatesRef: (options?: { workspaceRoot?: string; quiet?: boolean }) => Promise<void> = async () => { };
 
   const workspaceStore = createWorkspaceStore({
     mode,
@@ -634,21 +657,7 @@ export default function App() {
     });
   });
 
-  const selectedSessionModel = createMemo<ModelRef>(() => {
-    const id = selectedSessionId();
-    if (!id) return defaultModel();
 
-    const override = sessionModelOverrideById()[id];
-    if (override) return override;
-
-    const known = sessionModelById()[id];
-    if (known) return known;
-
-    const fromMessages = lastUserModelFromMessages(messages());
-    if (fromMessages) return fromMessages;
-
-    return defaultModel();
-  });
 
   const selectedSessionModelLabel = createMemo(() =>
     formatModelLabel(selectedSessionModel(), providers())
@@ -669,7 +678,7 @@ export default function App() {
           modelID: DEFAULT_MODEL.modelID,
           title: DEFAULT_MODEL.modelID,
           description: DEFAULT_MODEL.providerID,
-          footer: t("settings.model_fallback", currentLocale()),
+          footer: t("settings.model_fallback"),
           isFree: true,
           isConnected: false,
         },
@@ -702,9 +711,9 @@ export default function App() {
       for (const model of models) {
         const isFree = model.cost?.input === 0 && model.cost?.output === 0;
         const footerBits: string[] = [];
-        if (defaultModelID === model.id) footerBits.push(t("settings.model_default", currentLocale()));
-        if (isFree) footerBits.push(t("settings.model_free", currentLocale()));
-        if (model.capabilities?.reasoning) footerBits.push(t("settings.model_reasoning", currentLocale()));
+        if (defaultModelID === model.id) footerBits.push(t("settings.model_default"));
+        if (isFree) footerBits.push(t("settings.model_free"));
+        if (model.capabilities?.reasoning) footerBits.push(t("settings.model_reasoning"));
 
         next.push({
           providerID: provider.id,
@@ -820,7 +829,7 @@ export default function App() {
     setNotionBusy(true);
     setNotionError(null);
     setNotionStatus("connecting");
-    setNotionStatusDetail(t("settings.reload_required", currentLocale()));
+    setNotionStatusDetail(t("settings.reload_required"));
     setNotionSkillInstalled(false);
 
     try {
@@ -846,10 +855,10 @@ export default function App() {
       }
 
       markReloadRequired("mcp");
-      setNotionStatusDetail(t("settings.reload_required", currentLocale()));
+      setNotionStatusDetail(t("settings.reload_required"));
       try {
         window.localStorage.setItem("openwork.notionStatus", "connecting");
-        window.localStorage.setItem("openwork.notionStatusDetail", t("settings.reload_required", currentLocale()));
+        window.localStorage.setItem("openwork.notionStatusDetail", t("settings.reload_required"));
         window.localStorage.setItem("openwork.notionSkillInstalled", "0");
       } catch {
         // ignore
@@ -918,7 +927,7 @@ export default function App() {
 
     if (mode() !== "host") {
       console.log("[connectMcp] ❌ mode is not host, mode=", mode());
-      setMcpStatus(t("mcp.host_mode_only", currentLocale()));
+      setMcpStatus(t("mcp.host_mode_only"));
       return;
     }
 
@@ -926,13 +935,13 @@ export default function App() {
     console.log("[connectMcp] projectDir:", projectDir);
     if (!projectDir) {
       console.log("[connectMcp] ❌ no projectDir");
-      setMcpStatus(t("mcp.pick_workspace_first", currentLocale()));
+      setMcpStatus(t("mcp.pick_workspace_first"));
       return;
     }
 
     if (!isTauriRuntime()) {
       console.log("[connectMcp] ❌ not Tauri runtime");
-      setMcpStatus(t("mcp.desktop_required", currentLocale()));
+      setMcpStatus(t("mcp.desktop_required"));
       return;
     }
     console.log("[connectMcp] ✓ is Tauri runtime");
@@ -941,7 +950,7 @@ export default function App() {
     console.log("[connectMcp] activeClient:", activeClient ? "exists" : "null");
     if (!activeClient) {
       console.log("[connectMcp] ❌ no activeClient");
-      setMcpStatus(t("mcp.connect_server_first", currentLocale()));
+      setMcpStatus(t("mcp.connect_server_first"));
       return;
     }
 
@@ -1029,7 +1038,7 @@ export default function App() {
         setMcpAuthEntry(entry);
         setMcpAuthModalOpen(true);
       } else {
-        setMcpStatus(t("mcp.reload_required_after_add", currentLocale()));
+        setMcpStatus(t("mcp.reload_required_after_add"));
       }
 
       markReloadRequired("mcp");
@@ -1039,7 +1048,7 @@ export default function App() {
       console.log("[connectMcp] ✓ done");
     } catch (e) {
       console.error("[connectMcp] ❌ error:", e);
-      setMcpStatus(e instanceof Error ? e.message : t("mcp.connect_failed", currentLocale()));
+      setMcpStatus(e instanceof Error ? e.message : t("mcp.connect_failed"));
     } finally {
       setMcpConnectingName(null);
       console.log("[connectMcp] finally block, connecting name cleared");
@@ -1129,7 +1138,7 @@ export default function App() {
         mark("health ok", healthResult);
       } catch (healthErr) {
         mark("health FAILED", healthErr);
-        throw new Error(t("app.connection_lost", currentLocale()));
+        throw new Error(t("app.connection_lost"));
       }
 
       let rawResult: Awaited<ReturnType<typeof c.session.create>>;
@@ -1162,8 +1171,8 @@ export default function App() {
       setView("session");
     } catch (e) {
       mark("error caught", e);
-      const message = e instanceof Error ? e.message : t("app.unknown_error", currentLocale());
-      setError(addOpencodeCacheHint(message));
+      const message = e instanceof Error ? e.message : t("app.unknown_error");
+      setError(addOpencodeCacheHint(message, t));
     } finally {
       setCreatingSession(false);
       setBusy(false);
@@ -1498,16 +1507,16 @@ export default function App() {
   });
 
   const headerStatus = createMemo(() => {
-    if (!client() || !connectedVersion()) return t("status.disconnected", currentLocale());
-    const bits = [`${t("status.connected", currentLocale())} · ${connectedVersion()}`];
-    if (sseConnected()) bits.push(t("status.live", currentLocale()));
+    if (!client() || !connectedVersion()) return t("status.disconnected");
+    const bits = [`${t("status.connected")} · ${connectedVersion()}`];
+    if (sseConnected()) bits.push(t("status.live"));
     return bits.join(" · ");
   });
 
   const busyHint = createMemo(() => {
     if (!busy() || !busyLabel()) return null;
     const seconds = busySeconds();
-    const label = t(busyLabel()!, currentLocale());
+    const label = t(busyLabel()!);
     return seconds > 0 ? `${label} · ${seconds}s` : label;
   });
 
@@ -1673,10 +1682,10 @@ export default function App() {
     openDefaultModelPicker,
     showThinking: showThinking(),
     toggleShowThinking: () => setShowThinking((v) => !v),
-    modelVariantLabel: modelVariant() ?? t("common.default_parens", currentLocale()),
+    modelVariantLabel: modelVariant() ?? t("common.default_parens"),
     editModelVariant: () => {
       const next = window.prompt(
-        t("settings.model_variant_prompt", currentLocale()),
+        t("settings.model_variant_prompt"),
         modelVariant() ?? ""
       );
       if (next == null) return;
@@ -1730,18 +1739,20 @@ export default function App() {
     refreshMcpServers,
     showMcpReloadBanner: reloadRequired() && reloadReasons().includes("mcp"),
     reloadMcpEngine: () => reloadEngineInstance(),
-    language: currentLocale(),
-    setLanguage: setLocale,
+    language: locale(),
+    setLanguage: locale,
   });
 
   return (
     <>
-      <Switch>
-        <Match when={view() === "onboarding"}>
-          <OnboardingView {...onboardingProps()} />
-        </Match>
-        <Match when={view() === "session"}>
-          <SessionView
+      <Show
+        when={client()}
+        fallback={<OnboardingView {...onboardingProps()} />}
+      >
+        <Switch>
+
+          <Match when={view() === "session"}>
+            <SessionView
               selectedSessionId={activeSessionId()}
               setView={setView}
               setTab={setTab}
@@ -1769,7 +1780,7 @@ export default function App() {
               developerMode={developerMode()}
               showThinking={showThinking()}
               groupMessageParts={groupMessageParts}
-              summarizeStep={summarizeStep}
+              summarizeStep={(part) => summarizeStep(part, t)}
               expandedStepIds={expandedStepIds()}
               setExpandedStepIds={setExpandedStepIds}
               expandedSidebarSections={expandedSidebarSections()}
@@ -1798,13 +1809,17 @@ export default function App() {
                 }
               }}
               sessionStatus={selectedSessionStatus()}
-            error={error()}
-          />
-        </Match>
-        <Match when={true}>
-          <DashboardView {...dashboardProps()} />
-        </Match>
-      </Switch>
+              error={error()}
+            />
+          </Match>
+          <Match when={true}>
+            <DashboardView
+              {...dashboardProps()}
+              openLanguagePicker={() => setLanguagePickerOpen(true)}
+            />
+          </Match>
+        </Switch>
+      </Show>
 
       <ModelPickerModal
         open={modelPickerOpen()}
@@ -1829,7 +1844,7 @@ export default function App() {
           resetModalText().trim().toUpperCase() === "RESET"
         }
         hasActiveRuns={anyActiveRuns()}
-        language={currentLocale()}
+        language={locale()}
         onClose={() => setResetModalOpen(false)}
         onConfirm={confirmReset}
         onTextChange={setResetModalText}
@@ -1840,7 +1855,7 @@ export default function App() {
         client={client()}
         entry={mcpAuthEntry()}
         projectDir={workspaceProjectDir()}
-        language={currentLocale()}
+        language={locale()}
         onClose={() => {
           setMcpAuthModalOpen(false);
           setMcpAuthEntry(null);
@@ -1849,7 +1864,7 @@ export default function App() {
           setMcpAuthModalOpen(false);
           setMcpAuthEntry(null);
           markReloadRequired("mcp");
-          setMcpStatus(t("mcp.auth.oauth_completed_reload", currentLocale()));
+          setMcpStatus(t("mcp.auth.oauth_completed_reload"));
         }}
         onReloadEngine={() => reloadEngineInstance()}
       />
@@ -1877,6 +1892,16 @@ export default function App() {
         onClose={() => workspaceStore.setWorkspacePickerOpen(false)}
         onSelect={workspaceStore.activateWorkspace}
         onCreateNew={() => workspaceStore.setCreateWorkspaceOpen(true)}
+      />
+
+      <LanguagePickerModal
+        open={languagePickerOpen()}
+        currentLanguage={locale()}
+        onSelect={(l) => {
+          locale(l);
+          setLanguagePickerOpen(false);
+        }}
+        onClose={() => setLanguagePickerOpen(false)}
       />
 
       <CreateWorkspaceModal

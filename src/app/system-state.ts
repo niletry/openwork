@@ -8,6 +8,7 @@ import { relaunch } from "@tauri-apps/plugin-process";
 import type { Client, Mode, PluginScope, ReloadReason, ResetOpenworkMode, UpdateHandle } from "./types";
 import { addOpencodeCacheHint, isTauriRuntime, safeStringify } from "./utils";
 import { createUpdaterState } from "./context/updater";
+import { useI18n } from "../i18n";
 import { resetOpenworkState, resetOpencodeCache } from "./lib/tauri";
 import { unwrap, waitForHealthy } from "./lib/opencode";
 
@@ -33,6 +34,7 @@ export function createSystemState(options: {
   setError: (value: string | null) => void;
   notion?: NotionState;
 }) {
+  const [t] = useI18n();
   const [reloadRequired, setReloadRequired] = createSignal(false);
   const [reloadReasons, setReloadReasons] = createSignal<ReloadReason[]>([]);
   const [reloadLastTriggeredAt, setReloadLastTriggeredAt] = createSignal<number | null>(null);
@@ -122,7 +124,7 @@ export function createSystemState(options: {
       }
     } catch (e) {
       const message = e instanceof Error ? e.message : safeStringify(e);
-      options.setError(addOpencodeCacheHint(message));
+      options.setError(addOpencodeCacheHint(message, t));
       setResetModalBusy(false);
     }
   }

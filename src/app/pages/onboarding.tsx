@@ -8,7 +8,7 @@ import OnboardingWorkspaceSelector from "../components/onboarding-workspace-sele
 import OpenWorkLogo from "../components/openwork-logo";
 import TextInput from "../components/text-input";
 import { isTauriRuntime, isWindowsPlatform } from "../utils/index";
-import { currentLocale, t } from "../../i18n";
+import { useI18n } from "../../i18n";
 
 export type OnboardingViewProps = {
   mode: Mode | null;
@@ -59,7 +59,8 @@ export type OnboardingViewProps = {
 
 export default function OnboardingView(props: OnboardingViewProps) {
   // Translation helper that uses current language from i18n
-  const translate = (key: string) => t(key, currentLocale());
+  const [t] = useI18n();
+  const translate = (key: string) => t(key);
 
   const engineDoctorAvailable = () =>
     props.engineDoctorFound === true && props.engineDoctorSupportsServe === true;
@@ -117,15 +118,15 @@ export default function OnboardingView(props: OnboardingViewProps) {
           <div class="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-gray-2 to-transparent opacity-20 pointer-events-none" />
 
           <div class="max-w-lg w-full z-10 space-y-6">
-              <div class="text-center space-y-2">
-                <div class="w-12 h-12 bg-gray-12 rounded-2xl mx-auto flex items-center justify-center shadow-2xl shadow-gray-12/10 mb-6">
-                  <OpenWorkLogo size={18} class="text-gray-1" />
-                </div>
+            <div class="text-center space-y-2">
+              <div class="w-12 h-12 bg-gray-12 rounded-2xl mx-auto flex items-center justify-center shadow-2xl shadow-gray-12/10 mb-6">
+                <OpenWorkLogo size={18} class="text-gray-1" />
+              </div>
               <h2 class="text-2xl font-bold tracking-tight">
                 {props.workspaces.length <= 1 ? translate("onboarding.create_first_workspace") : translate("onboarding.create_workspace")}
               </h2>
               <p class="text-gray-11 text-sm leading-relaxed">
-                  {translate("onboarding.workspace_folder_label")}
+                {translate("onboarding.workspace_folder_label")}
               </p>
             </div>
 
@@ -137,31 +138,28 @@ export default function OnboardingView(props: OnboardingViewProps) {
                 </div>
                 <div class="flex flex-wrap gap-2">
                   <button
-                    class={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                      props.themeMode === "system"
-                        ? "bg-gray-12/10 text-gray-12 border-gray-6/30"
-                        : "text-gray-10 border-gray-6 hover:text-gray-12"
-                    }`}
+                    class={`text-xs px-3 py-1 rounded-full border transition-colors ${props.themeMode === "system"
+                      ? "bg-gray-12/10 text-gray-12 border-gray-6/30"
+                      : "text-gray-10 border-gray-6 hover:text-gray-12"
+                      }`}
                     onClick={() => props.setThemeMode("system")}
                   >
                     {translate("onboarding.theme_system")}
                   </button>
                   <button
-                    class={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                      props.themeMode === "light"
-                        ? "bg-gray-12/10 text-gray-12 border-gray-6/30"
-                        : "text-gray-10 border-gray-6 hover:text-gray-12"
-                    }`}
+                    class={`text-xs px-3 py-1 rounded-full border transition-colors ${props.themeMode === "light"
+                      ? "bg-gray-12/10 text-gray-12 border-gray-6/30"
+                      : "text-gray-10 border-gray-6 hover:text-gray-12"
+                      }`}
                     onClick={() => props.setThemeMode("light")}
                   >
                     {translate("onboarding.theme_light")}
                   </button>
                   <button
-                    class={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                      props.themeMode === "dark"
-                        ? "bg-gray-12/10 text-gray-12 border-gray-6/30"
-                        : "text-gray-10 border-gray-6 hover:text-gray-12"
-                    }`}
+                    class={`text-xs px-3 py-1 rounded-full border transition-colors ${props.themeMode === "dark"
+                      ? "bg-gray-12/10 text-gray-12 border-gray-6/30"
+                      : "text-gray-10 border-gray-6 hover:text-gray-12"
+                      }`}
                     onClick={() => props.setThemeMode("dark")}
                   >
                     {translate("onboarding.theme_dark")}
@@ -394,13 +392,13 @@ export default function OnboardingView(props: OnboardingViewProps) {
           <div class="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-gray-2 to-transparent opacity-20 pointer-events-none" />
 
           <div class="max-w-md w-full z-10 space-y-8">
-              <div class="text-center space-y-2">
-                <div class="w-12 h-12 bg-gray-2 rounded-2xl mx-auto flex items-center justify-center border border-gray-6 mb-6">
-                  <ArrowLeftRight size={20} class="text-gray-11" />
-                </div>
-                <h2 class="text-2xl font-bold tracking-tight">{translate("onboarding.connect_host")}</h2>
+            <div class="text-center space-y-2">
+              <div class="w-12 h-12 bg-gray-2 rounded-2xl mx-auto flex items-center justify-center border border-gray-6 mb-6">
+                <ArrowLeftRight size={20} class="text-gray-11" />
+              </div>
+              <h2 class="text-2xl font-bold tracking-tight">{translate("onboarding.connect_host")}</h2>
               <p class="text-gray-11 text-sm leading-relaxed">
-                  {translate("onboarding.connect_description")}
+                {translate("onboarding.connect_description")}
               </p>
             </div>
 
@@ -463,7 +461,7 @@ export default function OnboardingView(props: OnboardingViewProps) {
                 <div>
                   <h3 class="text-xl font-medium text-gray-12 mb-2">{translate("onboarding.run_local")}</h3>
                   <p class="text-gray-10 text-sm leading-relaxed mb-4">
-                      {translate("onboarding.run_local_description")}
+                    {translate("onboarding.run_local_description")}
                   </p>
                   <Show when={props.developerMode}>
                     <div class="flex items-center gap-2 text-xs font-mono text-indigo-11/80 bg-indigo-2/10 w-fit px-2 py-1 rounded border border-indigo-7/10">
@@ -497,11 +495,10 @@ export default function OnboardingView(props: OnboardingViewProps) {
                   class="flex items-center gap-2 text-xs text-gray-10 hover:text-gray-11 transition-colors group"
                 >
                   <div
-                    class={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                      props.rememberModeChoice
-                        ? "bg-indigo-7 border-indigo-7 text-gray-12"
-                        : "border-gray-7 bg-transparent group-hover:border-gray-7"
-                    }`}
+                    class={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${props.rememberModeChoice
+                      ? "bg-indigo-7 border-indigo-7 text-gray-12"
+                      : "border-gray-7 bg-transparent group-hover:border-gray-7"
+                      }`}
                   >
                     <Show when={props.rememberModeChoice}>
                       <CheckCircle2 size={10} />

@@ -1,7 +1,7 @@
 import { Show } from "solid-js";
 
 import { X } from "lucide-solid";
-import { t, currentLocale } from "../../i18n";
+import { useI18n } from "../../i18n";
 
 import Button from "./button";
 import TextInput from "./text-input";
@@ -21,7 +21,8 @@ export type TemplateModalProps = {
 };
 
 export default function TemplateModal(props: TemplateModalProps) {
-  const translate = (key: string) => t(key, currentLocale());
+  const [t] = useI18n();
+  const translate = (key: string) => t(key);
 
   return (
     <Show when={props.open}>
@@ -55,22 +56,20 @@ export default function TemplateModal(props: TemplateModalProps) {
 
               <div class="grid grid-cols-2 gap-2">
                 <button
-                  class={`px-3 py-2 rounded-xl border text-sm transition-colors ${
-                    props.scope === "workspace"
-                      ? "bg-gray-12/10 text-gray-12 border-gray-6/20"
-                      : "text-gray-11 border-gray-6 hover:text-gray-12"
-                  }`}
+                  class={`px-3 py-2 rounded-xl border text-sm transition-colors ${props.scope === "workspace"
+                    ? "bg-gray-12/10 text-gray-12 border-gray-6/20"
+                    : "text-gray-11 border-gray-6 hover:text-gray-12"
+                    }`}
                   onClick={() => props.onScopeChange("workspace")}
                   type="button"
                 >
                   {translate("templates.workspace")}
                 </button>
                 <button
-                  class={`px-3 py-2 rounded-xl border text-sm transition-colors ${
-                    props.scope === "global"
-                      ? "bg-gray-12/10 text-gray-12 border-gray-6/20"
-                      : "text-gray-11 border-gray-6 hover:text-gray-12"
-                  }`}
+                  class={`px-3 py-2 rounded-xl border text-sm transition-colors ${props.scope === "global"
+                    ? "bg-gray-12/10 text-gray-12 border-gray-6/20"
+                    : "text-gray-11 border-gray-6 hover:text-gray-12"
+                    }`}
                   onClick={() => props.onScopeChange("global")}
                   type="button"
                 >

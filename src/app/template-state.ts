@@ -5,7 +5,7 @@ import { buildTemplateDraft, createTemplateRecord, resetTemplateDraft } from "./
 import { addOpencodeCacheHint, isTauriRuntime, parseTemplateFrontmatter, safeParseJson, safeStringify } from "./utils";
 import { workspaceTemplateDelete, workspaceTemplateWrite } from "./lib/tauri";
 import { unwrap } from "./lib/opencode";
-import { t, currentLocale } from "../i18n";
+import { useI18n } from "../i18n";
 
 export function createTemplateState(options: {
   client: Accessor<Client | null>;
@@ -25,6 +25,8 @@ export function createTemplateState(options: {
   setBusyStartedAt: (value: number | null) => void;
   setError: (value: string | null) => void;
 }) {
+  const [t] = useI18n();
+
   const [templates, setTemplates] = createSignal<WorkspaceTemplate[]>([]);
   const [workspaceTemplatesLoaded, setWorkspaceTemplatesLoaded] = createSignal(false);
   const [globalTemplatesLoaded, setGlobalTemplatesLoaded] = createSignal(false);
@@ -65,17 +67,17 @@ export function createTemplateState(options: {
     draft.prompt = templateDraftPrompt().trim();
 
     if (!draft.title || !draft.prompt) {
-      options.setError(t("app.error.title_prompt_required", currentLocale()));
+      options.setError(t("app.error.title_prompt_required"));
       return;
     }
 
     if (draft.scope === "workspace") {
       if (!isTauriRuntime()) {
-        options.setError(t("app.error.workspace_templates_desktop", currentLocale()));
+        options.setError(t("app.error.workspace_templates_desktop"));
         return;
       }
       if (!options.activeWorkspaceRoot().trim()) {
-        options.setError(t("app.error.pick_workspace_folder", currentLocale()));
+        options.setError(t("app.error.pick_workspace_folder"));
         return;
       }
     }
@@ -100,7 +102,7 @@ export function createTemplateState(options: {
       setTemplateModalOpen(false);
     } catch (e) {
       const message = e instanceof Error ? e.message : safeStringify(e);
-      options.setError(addOpencodeCacheHint(message));
+      options.setError(addOpencodeCacheHint(message, t));
     } finally {
       options.setBusy(false);
       options.setBusyLabel(null);
@@ -126,7 +128,7 @@ export function createTemplateState(options: {
         await loadWorkspaceTemplates({ workspaceRoot, quiet: true });
       } catch (e) {
         const message = e instanceof Error ? e.message : safeStringify(e);
-        options.setError(addOpencodeCacheHint(message));
+        options.setError(addOpencodeCacheHint(message, t));
       } finally {
         options.setBusy(false);
         options.setBusyLabel(null);
@@ -174,8 +176,8 @@ export function createTemplateState(options: {
         [session.id]: model,
       }));
     } catch (e) {
-      const message = e instanceof Error ? e.message : t("app.unknown_error", currentLocale());
-      options.setError(addOpencodeCacheHint(message));
+      const message = e instanceof Error ? e.message : t("app.unknown_error");
+      options.setError(addOpencodeCacheHint(message, t));
     } finally {
       options.setBusy(false);
     }
@@ -206,7 +208,7 @@ export function createTemplateState(options: {
         const parsedFrontmatter = parseTemplateFrontmatter(raw);
         if (parsedFrontmatter) {
           const meta = parsedFrontmatter.data;
-          const title = typeof meta.title === "string" ? meta.title : t("common.untitled", currentLocale());
+          const title = typeof meta.title === "string" ? meta.title : t("common.untitled");
           const promptText = parsedFrontmatter.body ?? "";
           if (!promptText.trim()) return false;
 
@@ -225,7 +227,7 @@ export function createTemplateState(options: {
         const parsed = safeParseJson<Partial<WorkspaceTemplate> & Record<string, unknown>>(raw);
         if (!parsed) return false;
 
-        const title = typeof parsed.title === "string" ? parsed.title : t("common.untitled", currentLocale());
+        const title = typeof parsed.title === "string" ? parsed.title : t("common.untitled");
         const promptText = typeof parsed.prompt === "string" ? parsed.prompt : "";
         if (!promptText.trim()) return false;
 
@@ -284,7 +286,7 @@ export function createTemplateState(options: {
       setWorkspaceTemplatesLoaded(true);
       if (!optionsLoad?.quiet) {
         const message = e instanceof Error ? e.message : safeStringify(e);
-        options.setError(addOpencodeCacheHint(message));
+        options.setError(addOpencodeCacheHint(message, t));
       }
     }
   }

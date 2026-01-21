@@ -1,200 +1,181 @@
 import { For, Show } from "solid-js";
 
-import type { CuratedPackage, SkillCard } from "../types";
-import { isTauriRuntime } from "../utils";
+import type { Skill } from "../types";
+import { formatRelativeTime } from "../utils";
 
 import Button from "../components/button";
-import { Package, Upload } from "lucide-solid";
-import { currentLocale, t } from "../../i18n";
+import TextInput from "../components/text-input";
+import { useI18n } from "../../i18n";
+import { Box, Download, Package, RefreshCw, Search, Zap } from "lucide-solid";
 
 export type SkillsViewProps = {
   busy: boolean;
-  mode: "host" | "client" | null;
-  refreshSkills: (options?: { force?: boolean }) => void;
-  skills: SkillCard[];
-  skillsStatus: string | null;
-  openPackageSource: string;
-  setOpenPackageSource: (value: string) => void;
-  installFromOpenPackage: () => void;
+  skills: Skill[];
+  skillInput: string;
+  setSkillInput: (value: string) => void;
+  skillStatus: string | null;
+  installSkill: () => void;
   importLocalSkill: () => void;
-  packageSearch: string;
-  setPackageSearch: (value: string) => void;
-  filteredPackages: CuratedPackage[];
-  useCuratedPackage: (pkg: CuratedPackage) => void;
+  refreshSkills: () => void;
+  isHostMode: boolean;
 };
 
 export default function SkillsView(props: SkillsViewProps) {
-  // Translation helper that uses current language from i18n
-  const translate = (key: string) => t(key, currentLocale());
+  const [t] = useI18n();
 
   return (
     <section class="space-y-6">
       <div class="flex items-center justify-between">
-        <h3 class="text-sm font-medium text-gray-11 uppercase tracking-wider">{translate("skills.title")}</h3>
-        <Button variant="secondary" onClick={() => props.refreshSkills({ force: true })} disabled={props.busy}>
-          {translate("skills.refresh")}
+        <h3 class="text-sm font-medium text-gray-11 uppercase tracking-wider">{t("skills.title")}</h3>
+        <Button variant="ghost" onClick={props.refreshSkills} disabled={props.busy}>
+          <RefreshCw size={14} class={props.busy ? "animate-spin" : ""} />
+          {t("skills.refresh")}
         </Button>
       </div>
 
       <div class="bg-gray-2/30 border border-gray-6/50 rounded-2xl p-5 space-y-4">
-        <div class="flex items-center justify-between gap-3">
-          <div class="text-sm font-medium text-gray-12">{translate("skills.install_from_openpackage")}</div>
-          <Show when={props.mode !== "host"}>
-            <div class="text-xs text-gray-10">{translate("skills.host_mode_only")}</div>
-          </Show>
-        </div>
-        <div class="flex flex-col md:flex-row gap-2">
-          <input
-            class="w-full bg-zinc-900/50 border border-gray-6 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-600 focus:border-zinc-600 transition-all"
-            placeholder={translate("skills.source_placeholder")}
-            value={props.openPackageSource}
-            onInput={(e) => props.setOpenPackageSource(e.currentTarget.value)}
-          />
-          <Button
-            onClick={props.installFromOpenPackage}
-            disabled={props.busy || props.mode !== "host" || !isTauriRuntime()}
-            class="md:w-auto"
-          >
-            <Package size={16} />
-            {translate("skills.install")}
-          </Button>
-        </div>
-        <div class="text-xs text-gray-10">
-          {translate("skills.install_hint")}
-        </div>
-
-        <div class="flex items-center justify-between gap-3 pt-2 border-t border-zinc-800/60">
-          <div class="text-sm font-medium text-gray-12">{translate("skills.import_local")}</div>
-          <Button
-            variant="secondary"
-            onClick={props.importLocalSkill}
-            disabled={props.busy || props.mode !== "host" || !isTauriRuntime()}
-          >
-            <Upload size={16} />
-            {translate("skills.import")}
-          </Button>
-        </div>
-
-        <Show when={props.skillsStatus}>
-          <div class="rounded-xl bg-gray-1/20 border border-gray-6 p-3 text-xs text-gray-11 whitespace-pre-wrap break-words">
-            {props.skillsStatus}
+        <div class="flex flex-col gap-4">
+          <div class="flex-1 space-y-2">
+            <div class="text-sm font-medium text-gray-12">{t("skills.install_from_openpackage")}</div>
+            <Show when={!props.isHostMode}>
+              <div class="text-xs text-orange-10 bg-orange-2/10 border border-orange-6/20 rounded-lg px-2 py-1 inline-block">
+                {t("skills.host_mode_only")}
+              </div>
+            </Show>
           </div>
-        </Show>
-      </div>
-
-      <div class="bg-gray-2/30 border border-gray-6/50 rounded-2xl p-5 space-y-4">
-        <div class="flex items-center justify-between">
-          <div class="text-sm font-medium text-gray-12">{translate("skills.curated_packages")}</div>
-          <div class="text-xs text-gray-10">{props.filteredPackages.length}</div>
-        </div>
-
-        <div class="rounded-2xl border border-green-7/20 bg-green-7/10 p-4">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <div class="text-sm font-medium text-green-12">{translate("skills.notion_crm_title")}</div>
-              <div class="text-xs text-green-12/80 mt-1">{translate("skills.notion_crm_description")}</div>
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <TextInput
+                placeholder={t("skills.source_placeholder")}
+                value={props.skillInput}
+                onInput={(e) => props.setSkillInput(e.currentTarget.value)}
+                disabled={!props.isHostMode || props.busy}
+              />
             </div>
             <Button
               variant="secondary"
-              onClick={() => props.useCuratedPackage({
-                name: translate("skills.notion_crm_title"),
-                source: "https://github.com/different-ai/notion-crm-enrichment/tree/main/.claude/skills",
-                description: translate("skills.notion_crm_card_description"),
-                tags: ["notion", "crm", "skills"],
-                installable: false,
-              })}
-              disabled={props.busy}
+              onClick={props.installSkill}
+              disabled={!props.isHostMode || props.busy || !props.skillInput.trim()}
             >
-              {translate("skills.view")}
+              <Download size={16} />
+              {t("skills.install")}
+            </Button>
+          </div>
+          <p class="text-xs text-gray-10">{t("skills.install_hint")}</p>
+        </div>
+
+        <div class="pt-4 border-t border-gray-6/50">
+          <div class="flex items-center justify-between">
+            <div class="text-sm font-medium text-gray-12">{t("skills.import_local")}</div>
+            <Button variant="outline" onClick={props.importLocalSkill} disabled={!props.isHostMode || props.busy}>
+              {t("skills.import")}
             </Button>
           </div>
         </div>
+      </div>
 
-        <input
-          class="w-full bg-zinc-900/50 border border-gray-6  rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-600 focus:border-zinc-600 transition-all"
-          placeholder={translate("skills.search_placeholder")}
-          value={props.packageSearch}
-          onInput={(e) => props.setPackageSearch(e.currentTarget.value)}
-        />
+      <div class="space-y-3">
+        <h3 class="text-xs font-semibold text-gray-10 uppercase tracking-wider">{t("skills.curated_packages")}</h3>
 
-        <Show
-          when={props.filteredPackages.length}
-          fallback={
-            <div class="rounded-xl bg-gray-1/20 border border-gray-6 p-3 text-xs text-gray-11">
-              {translate("skills.no_matches")}
-            </div>
-          }
-        >
-          <div class="space-y-3">
-            <For each={props.filteredPackages}>
-              {(pkg) => (
-                <div class="rounded-xl border border-gray-6/70 bg-gray-1/40 p-4">
-                  <div class="flex items-start justify-between gap-4">
-                    <div class="space-y-2">
-                      <div class="text-sm font-medium text-gray-12">{pkg.name}</div>
-                      <div class="text-xs text-gray-10 font-mono break-all">{pkg.source}</div>
-                      <div class="text-sm text-gray-10">{pkg.description}</div>
-                      <div class="flex flex-wrap gap-2">
-                        <For each={pkg.tags}>
-                          {(tag) => (
-                            <span class="text-[10px] uppercase tracking-wide bg-gray-4/70 text-gray-11 px-2 py-0.5 rounded-full">
-                              {tag}
-                            </span>
-                          )}
-                        </For>
-                      </div>
-                    </div>
-                    <Button
-                      variant={pkg.installable ? "secondary" : "outline"}
-                      onClick={() => props.useCuratedPackage(pkg)}
-                      disabled={props.busy || (pkg.installable && (props.mode !== "host" || !isTauriRuntime()))}
-                    >
-                      {pkg.installable ? translate("skills.install_package") : translate("skills.view")}
-                    </Button>
-                  </div>
+        {/* Notion CRM Pack Card */}
+        <div class="bg-gradient-to-br from-indigo-9/10 to-purple-9/10 border border-indigo-6/30 rounded-2xl p-5 relative overflow-hidden group hover:border-indigo-6/50 transition-colors">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,_var(--tw-gradient-stops))] from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+          <div class="relative z-10 flex justify-between items-start gap-4">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <div class="p-1.5 bg-white/10 rounded-lg backdrop-blur-sm">
+                  <Box size={18} class="text-indigo-2" />
                 </div>
-              )}
-            </For>
-          </div>
-        </Show>
+                <h4 class="text-base font-semibold text-white">{t("skills.notion_crm_title")}</h4>
+              </div>
+              <p class="text-sm text-indigo-2 max-w-md">
+                {t("skills.notion_crm_description")}
+              </p>
+              <div class="flex flex-wrap gap-2 pt-1">
+                <span class="text-xs px-2 py-0.5 rounded-full bg-white/10 text-indigo-1 border border-white/10">notion</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-white/10 text-indigo-1 border border-white/10">crm</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-white/10 text-indigo-1 border border-white/10">contacts</span>
+              </div>
+            </div>
 
-        <div class="text-xs text-gray-10">
-          {translate("skills.registry_notice")}
+            <div class="flex flex-col gap-2">
+              <Button
+                variant="secondary"
+                class="bg-white/10 hover:bg-white/20 text-white border-transparent backdrop-blur-md shadow-xl"
+                onClick={() => props.setSkillInput("github:anthropics/sdks/packages/mcp-notion")}
+              >
+                {t("skills.view")}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-2/30 border border-gray-6/50 rounded-2xl p-4 flex items-center gap-3 text-gray-10">
+          <Search size={16} />
+          <input
+            type="text"
+            placeholder={t("skills.search_placeholder")}
+            class="bg-transparent border-none focus:outline-none text-sm w-full placeholder-gray-8"
+            disabled
+          />
+        </div>
+
+        <div class="text-center py-8 text-gray-10 text-sm italic">
+          {t("skills.no_matches")}
+        </div>
+
+        <div class="rounded-xl bg-blue-2/10 border border-blue-6/20 p-4 text-xs text-blue-11 leading-relaxed">
+          {t("skills.registry_notice")}
         </div>
       </div>
 
-      <div>
-        <div class="flex items-center justify-between mb-3">
-          <div class="text-sm font-medium text-gray-12">{translate("skills.installed")}</div>
-          <div class="text-xs text-gray-10">{props.skills.length}</div>
+      <div class="space-y-3">
+        <div class="flex items-center gap-2">
+          <h3 class="text-xs font-semibold text-gray-10 uppercase tracking-wider">{t("skills.installed")}</h3>
+          <span class="text-xs text-gray-8 bg-gray-3 px-1.5 py-0.5 rounded-full">{props.skills.length}</span>
         </div>
 
         <Show
           when={props.skills.length}
           fallback={
-            <div class="bg-gray-2/30 border border-gray-6/50 rounded-2xl p-6 text-sm text-zinc-500">
-              {translate("skills.no_skills")}
+            <div class="rounded-xl border border-gray-6/60 bg-gray-1/40 p-8 text-center space-y-2">
+              <Zap size={24} class="mx-auto text-gray-7 mb-2" />
+              <p class="text-sm text-gray-10">{t("skills.no_skills")}</p>
             </div>
           }
         >
           <div class="grid gap-3">
             <For each={props.skills}>
-              {(s) => (
-                <div class="bg-gray-2/30 border border-gray-6/50 rounded-2xl p-5">
-                  <div class="flex items-center gap-2">
-                    <Package size={16} class="text-gray-11" />
-                    <div class="font-medium text-gray-12">{s.name}</div>
+              {(skill) => (
+                <div class="group bg-gray-2/30 border border-gray-6/50 rounded-xl p-4 hover:bg-gray-2/50 hover:border-gray-6 transition-all">
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <Package size={16} class="text-gray-11" />
+                        <div class="font-medium text-gray-12 truncate font-mono text-sm">{skill.name}</div>
+                        <Show when={skill.version}>
+                          <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-4 text-gray-11 border border-gray-6 font-mono">v{skill.version}</span>
+                        </Show>
+                      </div>
+                      <Show when={skill.description}>
+                        <div class="text-xs text-gray-10 truncate mb-1">{skill.description}</div>
+                      </Show>
+                      <div class="text-xs text-gray-10 truncate font-mono text-opacity-80">{skill.path}</div>
+                    </div>
                   </div>
-                  <Show when={s.description}>
-                    <div class="mt-1 text-sm text-gray-10">{s.description}</div>
-                  </Show>
-                  <div class="mt-2 text-xs text-gray-7 font-mono">{s.path}</div>
                 </div>
               )}
             </For>
           </div>
         </Show>
       </div>
+
+      <Show when={props.skillStatus}>
+        <div class="fixed bottom-6 right-6 max-w-sm bg-gray-1 border border-gray-6 shadow-2xl rounded-xl p-4 animate-in slide-in-from-bottom-2 duration-200 z-50">
+          <div class="text-xs font-mono text-gray-11 break-all">{props.skillStatus}</div>
+        </div>
+      </Show>
     </section>
   );
 }

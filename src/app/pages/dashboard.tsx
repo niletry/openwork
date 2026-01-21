@@ -11,6 +11,7 @@ import type {
 import type { McpDirectoryInfo } from "../constants";
 import type { WorkspaceInfo } from "../lib/tauri";
 import { formatRelativeTime } from "../utils";
+import { useI18n } from "../../i18n";
 
 import Button from "../components/button";
 import OpenWorkLogo from "../components/openwork-logo";
@@ -186,25 +187,28 @@ export type DashboardViewProps = {
   setDemoSequence: (
     value: "cold-open" | "scheduler" | "summaries" | "groceries"
   ) => void;
+  openLanguagePicker: () => void;
 };
 
 export default function DashboardView(props: DashboardViewProps) {
+  const [t] = useI18n();
+
   const title = createMemo(() => {
     switch (props.tab) {
       case "sessions":
-        return "Sessions";
+        return t("sidebar.sessions");
       case "templates":
-        return "Templates";
+        return t("sidebar.templates");
       case "skills":
-        return "Skills";
+        return t("sidebar.skills");
       case "plugins":
-        return "Plugins";
+        return t("sidebar.plugins");
       case "mcp":
-        return "MCPs";
+        return t("sidebar.mcps");
       case "settings":
-        return "Settings";
+        return t("sidebar.settings");
       default:
-        return "Dashboard";
+        return t("sidebar.dashboard");
     }
   });
 
@@ -277,11 +281,10 @@ export default function DashboardView(props: DashboardViewProps) {
     const active = () => props.tab === t;
     return (
       <button
-        class={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-          active()
-            ? "bg-gray-2 text-gray-12"
-            : "text-gray-10 hover:text-gray-12 hover:bg-gray-2/50"
-        }`}
+        class={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${active()
+          ? "bg-gray-2 text-gray-12"
+          : "text-gray-10 hover:text-gray-12 hover:bg-gray-2/50"
+          }`}
         onClick={() => props.setTab(t)}
       >
         {icon}
@@ -302,49 +305,47 @@ export default function DashboardView(props: DashboardViewProps) {
           </div>
 
           <nav class="space-y-1">
-            {navItem("home", "Dashboard", <Command size={18} />)}
-            {navItem("sessions", "Sessions", <Play size={18} />)}
-            {navItem("templates", "Templates", <FileText size={18} />)}
-            {navItem("skills", "Skills", <Package size={18} />)}
-            {navItem("plugins", "Plugins", <Cpu size={18} />)}
+            {navItem("home", t("sidebar.dashboard"), <Command size={18} />)}
+            {navItem("sessions", t("sidebar.sessions"), <Play size={18} />)}
+            {navItem("templates", t("sidebar.templates"), <FileText size={18} />)}
+            {navItem("skills", t("sidebar.skills"), <Package size={18} />)}
+            {navItem("plugins", t("sidebar.plugins"), <Cpu size={18} />)}
             {navItem(
               "mcp",
               <span class="inline-flex items-center gap-2">
-                MCPs
+                {t("sidebar.mcps")}
                 <span class="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-amber-7/20 text-amber-12">
                   Alpha
                 </span>
               </span>,
               <Server size={18} />,
             )}
-            {navItem("settings", "Settings", <Settings size={18} />)}
+            {navItem("settings", t("sidebar.settings"), <Settings size={18} />)}
           </nav>
         </div>
 
         <div class="space-y-4">
           <div class="px-3 py-3 rounded-xl bg-gray-2/50 border border-gray-6">
             <div class="flex items-center gap-2 text-xs font-medium text-gray-11 mb-2">
-              Connection
+              {t("dashboard.connection.label")}
               <Show when={props.developerMode}>
                 <span class="text-gray-7">
-                  {props.mode === "host" ? "Local Engine" : "Client Mode"}
+                  {props.mode === "host" ? t("dashboard.connection.local_engine") : t("dashboard.connection.client_mode")}
                 </span>
               </Show>
             </div>
             <div class="flex items-center gap-2">
               <div
-                class={`w-2 h-2 rounded-full ${
-                  props.clientConnected
-                    ? "bg-green-7 animate-pulse"
-                    : "bg-gray-6"
-                }`}
+                class={`w-2 h-2 rounded-full ${props.clientConnected
+                  ? "bg-green-7 animate-pulse"
+                  : "bg-gray-6"
+                  }`}
               />
               <span
-                class={`text-sm font-medium ${
-                  props.clientConnected ? "text-green-6" : "text-gray-10"
-                }`}
+                class={`text-sm font-medium ${props.clientConnected ? "text-green-6" : "text-gray-10"
+                  }`}
               >
-                {props.clientConnected ? "Connected" : "Not connected"}
+                {props.clientConnected ? t("dashboard.connection.connected") : t("dashboard.connection.not_connected")}
               </span>
             </div>
             <Show when={props.developerMode}>
@@ -361,7 +362,7 @@ export default function DashboardView(props: DashboardViewProps) {
               disabled={props.busy}
               class="w-full"
             >
-              Connect
+              {t("dashboard.connection.actions.connect")}
             </Button>
           </Show>
 
@@ -372,7 +373,7 @@ export default function DashboardView(props: DashboardViewProps) {
               disabled={props.busy}
               class="w-full"
             >
-              Stop & Disconnect
+              {t("dashboard.connection.actions.stop_disconnect")}
             </Button>
           </Show>
 
@@ -383,7 +384,7 @@ export default function DashboardView(props: DashboardViewProps) {
               disabled={props.busy}
               class="w-full"
             >
-              Disconnect
+              {t("dashboard.connection.actions.disconnect")}
             </Button>
           </Show>
         </div>
@@ -421,7 +422,7 @@ export default function DashboardView(props: DashboardViewProps) {
                 title={props.newTaskDisabled ? props.busyHint ?? "Busy" : ""}
               >
                 <Play size={16} />
-                New Task
+                {t("dashboard.hero.new_task")}
               </Button>
             </Show>
 
@@ -443,7 +444,7 @@ export default function DashboardView(props: DashboardViewProps) {
                 disabled={props.busy}
               >
                 <Plus size={16} />
-                New
+                {t("templates.new")}
               </Button>
             </Show>
           </div>
@@ -457,11 +458,10 @@ export default function DashboardView(props: DashboardViewProps) {
                   <div class="bg-gray-1 rounded-[22px] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div class="space-y-2 text-center md:text-left">
                       <h2 class="text-2xl font-semibold text-gray-12">
-                        What should we do today?
+                        {t("dashboard.hero.title")}
                       </h2>
                       <p class="text-gray-11">
-                        Describe an outcome. OpenWork will run it and keep an
-                        audit trail.
+                        {t("dashboard.hero.subtitle")}
                       </p>
                     </div>
                     <Button
@@ -473,7 +473,7 @@ export default function DashboardView(props: DashboardViewProps) {
                       class="w-full md:w-auto py-3 px-6 text-base"
                     >
                       <Play size={18} />
-                      New Task
+                      {t("dashboard.hero.new_task")}
                     </Button>
                   </div>
                 </div>
@@ -482,13 +482,13 @@ export default function DashboardView(props: DashboardViewProps) {
               <section>
                 <div class="flex items-center justify-between mb-4">
                   <h3 class="text-sm font-medium text-gray-11 uppercase tracking-wider">
-                    Quick Start Templates
+                    {t("dashboard.sections.quick_templates")}
                   </h3>
                   <button
                     class="text-sm text-gray-10 hover:text-gray-12"
                     onClick={() => props.setTab("templates")}
                   >
-                    View all
+                    {t("dashboard.sections.view_all")}
                   </button>
                 </div>
 
@@ -496,23 +496,23 @@ export default function DashboardView(props: DashboardViewProps) {
                   when={quickTemplates().length}
                   fallback={
                     <div class="bg-gray-2/30 border border-gray-6/50 rounded-2xl p-6 text-sm text-gray-10">
-                      No templates yet. Starter templates will appear here.
+                      {t("dashboard.empty.templates")}
                     </div>
                   }
                 >
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <For each={quickTemplates()}>
-                      {(t) => (
+                      {(template) => (
                         <button
-                          onClick={() => props.runTemplate(t)}
+                          onClick={() => props.runTemplate(template)}
                           class="group p-5 rounded-2xl bg-gray-2/30 border border-gray-6/50 hover:bg-gray-2 hover:border-gray-7 transition-all text-left"
                         >
                           <div class="w-10 h-10 rounded-full bg-gray-4 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                             <FileText size={20} class="text-indigo-11" />
                           </div>
-                          <h4 class="font-medium text-gray-12 mb-1">{t.title}</h4>
+                          <h4 class="font-medium text-gray-12 mb-1">{template.title}</h4>
                           <p class="text-sm text-gray-10">
-                            {t.description || "Run a saved workflow"}
+                            {template.description || t("dashboard.item.run_template")}
                           </p>
                         </button>
                       )}
@@ -523,18 +523,17 @@ export default function DashboardView(props: DashboardViewProps) {
 
               <section>
                 <h3 class="text-sm font-medium text-gray-11 uppercase tracking-wider mb-4">
-                  Recent Sessions
+                  {t("dashboard.sections.recent_sessions")}
                 </h3>
 
                 <div class="bg-gray-2/30 border border-gray-6/50 rounded-2xl overflow-hidden">
                   <For each={props.sessions.slice(0, 3)}>
                     {(s, idx) => (
                       <button
-                        class={`w-full p-4 flex items-center justify-between hover:bg-gray-4/50 transition-colors text-left ${
-                          idx() !== Math.min(props.sessions.length, 3) - 1
-                            ? "border-b border-gray-6/50"
-                            : ""
-                        }`}
+                        class={`w-full p-4 flex items-center justify-between hover:bg-gray-4/50 transition-colors text-left ${idx() !== Math.min(props.sessions.length, 3) - 1
+                          ? "border-b border-gray-6/50"
+                          : ""
+                          }`}
                         onPointerDown={(e) => {
                           e.currentTarget.setPointerCapture?.(e.pointerId);
                         }}
@@ -552,7 +551,7 @@ export default function DashboardView(props: DashboardViewProps) {
                             </div>
                             <div class="text-xs text-gray-10 flex items-center gap-2">
                               <span class="flex items-center gap-1">
-                                {formatRelativeTime(s.time.updated)}
+                                {formatRelativeTime(s.time.updated, t)}
                               </span>
                               <Show
                                 when={
@@ -561,7 +560,7 @@ export default function DashboardView(props: DashboardViewProps) {
                                 }
                               >
                                 <span class="text-[11px] px-2 py-0.5 rounded-full border border-gray-7/60 text-gray-10">
-                                  this workspace
+                                  {t("dashboard.item.this_workspace")}
                                 </span>
                               </Show>
                             </div>
@@ -570,7 +569,7 @@ export default function DashboardView(props: DashboardViewProps) {
                         <div class="flex items-center gap-4">
                           <span class="text-xs px-2 py-0.5 rounded-full border border-gray-7/60 text-gray-11 flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 rounded-full bg-current" />
-                            {props.sessionStatusById[s.id] ?? "idle"}
+                            {props.sessionStatusById[s.id] ?? t("dashboard.item.idle")}
                           </span>
                         </div>
                       </button>
@@ -579,7 +578,8 @@ export default function DashboardView(props: DashboardViewProps) {
 
                   <Show when={!props.sessions.length}>
                     <div class="p-6 text-sm text-gray-10">
-                      No sessions yet.
+                      {t("dashboard.empty.sessions")}
+
                     </div>
                   </Show>
                 </div>
@@ -589,18 +589,17 @@ export default function DashboardView(props: DashboardViewProps) {
             <Match when={props.tab === "sessions"}>
               <section>
                 <h3 class="text-sm font-medium text-gray-11 uppercase tracking-wider mb-4">
-                  Recent Sessions
+                  {t("dashboard.sections.recent_sessions")}
                 </h3>
 
                 <div class="bg-gray-2/30 border border-gray-6/50 rounded-2xl overflow-hidden">
                   <For each={props.sessions.slice(0, 3)}>
                     {(s, idx) => (
                       <button
-                        class={`w-full p-4 flex items-center justify-between hover:bg-gray-4/50 transition-colors text-left ${
-                          idx() !== Math.min(props.sessions.length, 3) - 1
-                            ? "border-b border-gray-6/50"
-                            : ""
-                        }`}
+                        class={`w-full p-4 flex items-center justify-between hover:bg-gray-4/50 transition-colors text-left ${idx() !== Math.min(props.sessions.length, 3) - 1
+                          ? "border-b border-gray-6/50"
+                          : ""
+                          }`}
                         onPointerDown={(e) => {
                           e.currentTarget.setPointerCapture?.(e.pointerId);
                         }}
@@ -618,7 +617,7 @@ export default function DashboardView(props: DashboardViewProps) {
                             </div>
                             <div class="text-xs text-gray-10 flex items-center gap-2">
                               <span class="flex items-center gap-1">
-                                {formatRelativeTime(s.time.updated)}
+                                {formatRelativeTime(s.time.updated, t)}
                               </span>
                               <Show
                                 when={
@@ -671,18 +670,14 @@ export default function DashboardView(props: DashboardViewProps) {
             <Match when={props.tab === "skills"}>
               <SkillsView
                 busy={props.busy}
-                mode={props.mode}
+                isHostMode={props.mode === "host"}
                 refreshSkills={props.refreshSkills}
                 skills={props.skills}
-                skillsStatus={props.skillsStatus}
-                openPackageSource={props.openPackageSource}
-                setOpenPackageSource={props.setOpenPackageSource}
-                installFromOpenPackage={props.installFromOpenPackage}
+                skillStatus={props.skillsStatus}
+                skillInput={props.openPackageSource}
+                setSkillInput={props.setOpenPackageSource}
+                installSkill={props.installFromOpenPackage}
                 importLocalSkill={props.importLocalSkill}
-                packageSearch={props.packageSearch}
-                setPackageSearch={props.setPackageSearch}
-                filteredPackages={props.filteredPackages}
-                useCuratedPackage={props.useCuratedPackage}
               />
             </Match>
 
@@ -726,54 +721,55 @@ export default function DashboardView(props: DashboardViewProps) {
             </Match>
 
             <Match when={props.tab === "settings"}>
-                <SettingsView
-                  mode={props.mode}
-                  baseUrl={props.baseUrl}
-                  headerStatus={props.headerStatus}
-                  busy={props.busy}
-                  developerMode={props.developerMode}
-                  toggleDeveloperMode={props.toggleDeveloperMode}
-                  stopHost={props.stopHost}
-                  engineSource={props.engineSource}
-                  setEngineSource={props.setEngineSource}
-                  isWindows={props.isWindows}
-                  defaultModelLabel={props.defaultModelLabel}
-                  defaultModelRef={props.defaultModelRef}
-                  openDefaultModelPicker={props.openDefaultModelPicker}
-                  showThinking={props.showThinking}
-                  toggleShowThinking={props.toggleShowThinking}
-                  modelVariantLabel={props.modelVariantLabel}
-                  editModelVariant={props.editModelVariant}
-                  updateAutoCheck={props.updateAutoCheck}
-                  toggleUpdateAutoCheck={props.toggleUpdateAutoCheck}
-                  themeMode={props.themeMode}
-                  setThemeMode={props.setThemeMode}
-                  updateStatus={props.updateStatus}
-                  updateEnv={props.updateEnv}
-                  appVersion={props.appVersion}
-                  checkForUpdates={props.checkForUpdates}
-                  downloadUpdate={props.downloadUpdate}
-                  installUpdateAndRestart={props.installUpdateAndRestart}
-                  anyActiveRuns={props.anyActiveRuns}
-                  onResetStartupPreference={props.onResetStartupPreference}
-                  openResetModal={props.openResetModal}
-                  resetModalBusy={props.resetModalBusy}
-                  pendingPermissions={props.pendingPermissions}
-                  events={props.events}
-                  safeStringify={props.safeStringify}
-                  repairOpencodeCache={props.repairOpencodeCache}
-                  cacheRepairBusy={props.cacheRepairBusy}
-                  cacheRepairResult={props.cacheRepairResult}
-                  notionStatus={props.notionStatus}
-                  notionStatusDetail={props.notionStatusDetail}
-                  notionError={props.notionError}
-                  notionBusy={props.notionBusy}
-                  connectNotion={props.connectNotion}
-                  demoMode={props.demoMode}
-                  toggleDemoMode={props.toggleDemoMode}
-                  demoSequence={props.demoSequence}
-                  setDemoSequence={props.setDemoSequence}
-                />
+              <SettingsView
+                mode={props.mode}
+                baseUrl={props.baseUrl}
+                headerStatus={props.headerStatus}
+                busy={props.busy}
+                developerMode={props.developerMode}
+                toggleDeveloperMode={props.toggleDeveloperMode}
+                stopHost={props.stopHost}
+                engineSource={props.engineSource}
+                setEngineSource={props.setEngineSource}
+                isWindows={props.isWindows}
+                defaultModelLabel={props.defaultModelLabel}
+                defaultModelRef={props.defaultModelRef}
+                openDefaultModelPicker={props.openDefaultModelPicker}
+                showThinking={props.showThinking}
+                toggleShowThinking={props.toggleShowThinking}
+                modelVariantLabel={props.modelVariantLabel}
+                editModelVariant={props.editModelVariant}
+                updateAutoCheck={props.updateAutoCheck}
+                toggleUpdateAutoCheck={props.toggleUpdateAutoCheck}
+                themeMode={props.themeMode}
+                setThemeMode={props.setThemeMode}
+                updateStatus={props.updateStatus}
+                updateEnv={props.updateEnv}
+                appVersion={props.appVersion}
+                checkForUpdates={props.checkForUpdates}
+                downloadUpdate={props.downloadUpdate}
+                installUpdateAndRestart={props.installUpdateAndRestart}
+                anyActiveRuns={props.anyActiveRuns}
+                onResetStartupPreference={props.onResetStartupPreference}
+                openResetModal={props.openResetModal}
+                resetModalBusy={props.resetModalBusy}
+                pendingPermissions={props.pendingPermissions}
+                events={props.events}
+                safeStringify={props.safeStringify}
+                repairOpencodeCache={props.repairOpencodeCache}
+                cacheRepairBusy={props.cacheRepairBusy}
+                cacheRepairResult={props.cacheRepairResult}
+                notionStatus={props.notionStatus}
+                notionStatusDetail={props.notionStatusDetail}
+                notionError={props.notionError}
+                notionBusy={props.notionBusy}
+                connectNotion={props.connectNotion}
+                demoMode={props.demoMode}
+                toggleDemoMode={props.toggleDemoMode}
+                demoSequence={props.demoSequence}
+                setDemoSequence={props.setDemoSequence}
+                openLanguagePicker={props.openLanguagePicker}
+              />
 
             </Match>
           </Switch>
@@ -815,63 +811,56 @@ export default function DashboardView(props: DashboardViewProps) {
         <nav class="md:hidden fixed bottom-0 left-0 right-0 border-t border-gray-6 bg-gray-1/90 backdrop-blur-md">
           <div class="mx-auto max-w-5xl px-4 py-3 grid grid-cols-6 gap-2">
             <button
-              class={`flex flex-col items-center gap-1 text-xs ${
-                props.tab === "home" ? "text-gray-12" : "text-gray-10"
-              }`}
+              class={`flex flex-col items-center gap-1 text-xs ${props.tab === "home" ? "text-gray-12" : "text-gray-10"
+                }`}
               onClick={() => props.setTab("home")}
             >
               <Command size={18} />
               Home
             </button>
             <button
-              class={`flex flex-col items-center gap-1 text-xs ${
-                props.tab === "sessions" ? "text-gray-12" : "text-gray-10"
-              }`}
+              class={`flex flex-col items-center gap-1 text-xs ${props.tab === "sessions" ? "text-gray-12" : "text-gray-10"
+                }`}
               onClick={() => props.setTab("sessions")}
             >
               <Play size={18} />
               Runs
             </button>
             <button
-              class={`flex flex-col items-center gap-1 text-xs ${
-                props.tab === "templates" ? "text-gray-12" : "text-gray-10"
-              }`}
+              class={`flex flex-col items-center gap-1 text-xs ${props.tab === "templates" ? "text-gray-12" : "text-gray-10"
+                }`}
               onClick={() => props.setTab("templates")}
             >
               <FileText size={18} />
               Templates
             </button>
             <button
-              class={`flex flex-col items-center gap-1 text-xs ${
-                props.tab === "skills" ? "text-gray-12" : "text-gray-10"
-              }`}
+              class={`flex flex-col items-center gap-1 text-xs ${props.tab === "skills" ? "text-gray-12" : "text-gray-10"
+                }`}
               onClick={() => props.setTab("skills")}
             >
               <Package size={18} />
               Skills
             </button>
             <button
-              class={`flex flex-col items-center gap-1 text-xs ${
-                props.tab === "plugins" ? "text-gray-12" : "text-gray-10"
-              }`}
+              class={`flex flex-col items-center gap-1 text-xs ${props.tab === "plugins" ? "text-gray-12" : "text-gray-10"
+                }`}
               onClick={() => props.setTab("plugins")}
             >
               <Cpu size={18} />
               Plugins
             </button>
             <button
-              class={`flex flex-col items-center gap-1 text-xs ${
-                props.tab === "mcp" ? "text-gray-12" : "text-gray-10"
-              }`}
+              class={`flex flex-col items-center gap-1 text-xs ${props.tab === "mcp" ? "text-gray-12" : "text-gray-10"
+                }`}
               onClick={() => props.setTab("mcp")}
             >
               <Server size={18} />
               MCPs
             </button>
             <button
-              class={`flex flex-col items-center gap-1 text-xs ${
-                props.tab === "settings" ? "text-gray-12" : "text-gray-10"
-              }`}
+              class={`flex flex-col items-center gap-1 text-xs ${props.tab === "settings" ? "text-gray-12" : "text-gray-10"
+                }`}
               onClick={() => props.setTab("settings")}
             >
               <Settings size={18} />
@@ -879,7 +868,7 @@ export default function DashboardView(props: DashboardViewProps) {
             </button>
           </div>
         </nav>
-      </main>
-    </div>
+      </main >
+    </div >
   );
 }

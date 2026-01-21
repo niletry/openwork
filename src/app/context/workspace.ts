@@ -29,7 +29,7 @@ import {
 } from "../lib/tauri";
 import { waitForHealthy, createClient } from "../lib/opencode";
 import type { Provider } from "@opencode-ai/sdk/v2/client";
-import { t, currentLocale } from "../../i18n";
+import { useI18n } from "../../i18n";
 
 export type WorkspaceStore = ReturnType<typeof createWorkspaceStore>;
 
@@ -74,6 +74,7 @@ export function createWorkspaceStore(options: {
   setTab: (value: any) => void;
   isWindowsPlatform: () => boolean;
 }) {
+  const [t] = useI18n();
 
   const [engine, setEngine] = createSignal<EngineInfo | null>(null);
   const [engineDoctorResult, setEngineDoctorResult] = createSignal<EngineDoctorResult | null>(null);
@@ -254,7 +255,7 @@ export function createWorkspaceStore(options: {
       options.setClient(null);
       options.setConnectedVersion(null);
       const message = e instanceof Error ? e.message : safeStringify(e);
-      options.setError(addOpencodeCacheHint(message));
+      options.setError(addOpencodeCacheHint(message, t));
       return false;
     } finally {
       options.setBusy(false);
@@ -265,12 +266,12 @@ export function createWorkspaceStore(options: {
 
   async function createWorkspaceFlow(preset: WorkspacePreset, folder: string | null) {
     if (!isTauriRuntime()) {
-      options.setError(t("app.error.tauri_required", currentLocale()));
+      options.setError(t("app.error.tauri_required"));
       return;
     }
 
     if (!folder) {
-      options.setError(t("app.error.choose_folder", currentLocale()));
+      options.setError(t("app.error.choose_folder"));
       return;
     }
 
@@ -282,7 +283,7 @@ export function createWorkspaceStore(options: {
     try {
       const resolvedFolder = await resolveWorkspacePath(folder);
       if (!resolvedFolder) {
-        options.setError(t("app.error.choose_folder", currentLocale()));
+        options.setError(t("app.error.choose_folder"));
         return;
       }
 
@@ -305,7 +306,7 @@ export function createWorkspaceStore(options: {
       markOnboardingComplete();
     } catch (e) {
       const message = e instanceof Error ? e.message : safeStringify(e);
-      options.setError(addOpencodeCacheHint(message));
+      options.setError(addOpencodeCacheHint(message, t));
     } finally {
       options.setBusy(false);
       options.setBusyLabel(null);
@@ -315,32 +316,32 @@ export function createWorkspaceStore(options: {
 
   async function pickWorkspaceFolder() {
     if (!isTauriRuntime()) {
-      options.setError(t("app.error.tauri_required", currentLocale()));
+      options.setError(t("app.error.tauri_required"));
       return null;
     }
 
     try {
-      const selection = await pickDirectory({ title: t("onboarding.choose_workspace_folder", currentLocale()) });
+      const selection = await pickDirectory({ title: t("onboarding.choose_workspace_folder") });
       const folder =
         typeof selection === "string" ? selection : Array.isArray(selection) ? selection[0] : null;
 
       return folder ?? null;
     } catch (e) {
       const message = e instanceof Error ? e.message : safeStringify(e);
-      options.setError(addOpencodeCacheHint(message));
+      options.setError(addOpencodeCacheHint(message, t));
       return null;
     }
   }
 
   async function startHost(optionsOverride?: { workspacePath?: string }) {
     if (!isTauriRuntime()) {
-      options.setError(t("app.error.tauri_required", currentLocale()));
+      options.setError(t("app.error.tauri_required"));
       return false;
     }
 
     const dir = (optionsOverride?.workspacePath ?? activeWorkspacePath() ?? projectDir()).trim();
     if (!dir) {
-      options.setError(t("app.error.pick_workspace_folder", currentLocale()));
+      options.setError(t("app.error.pick_workspace_folder"));
       return false;
     }
 
@@ -385,7 +386,7 @@ export function createWorkspaceStore(options: {
 
       if (options.engineSource() === "sidecar" && options.isWindowsPlatform()) {
         options.setEngineSource("path");
-        options.setError(t("app.error.sidecar_unsupported_windows", currentLocale()));
+        options.setError(t("app.error.sidecar_unsupported_windows"));
       }
 
       const info = await engineStart(dir, { preferSidecar: options.engineSource() === "sidecar" });
@@ -400,7 +401,7 @@ export function createWorkspaceStore(options: {
       return true;
     } catch (e) {
       const message = e instanceof Error ? e.message : safeStringify(e);
-      options.setError(addOpencodeCacheHint(message));
+      options.setError(addOpencodeCacheHint(message, t));
       return false;
     } finally {
       options.setBusy(false);
@@ -445,7 +446,7 @@ export function createWorkspaceStore(options: {
       options.setView(showOnboarding ? "onboarding" : "dashboard");
     } catch (e) {
       const message = e instanceof Error ? e.message : safeStringify(e);
-      options.setError(addOpencodeCacheHint(message));
+      options.setError(addOpencodeCacheHint(message, t));
     } finally {
       options.setBusy(false);
       options.setBusyLabel(null);
@@ -466,13 +467,13 @@ export function createWorkspaceStore(options: {
       setEngineInstallLogs(combined || null);
 
       if (!result.ok) {
-        options.setError(result.stderr.trim() || t("app.error.install_failed", currentLocale()));
+        options.setError(result.stderr.trim() || t("app.error.install_failed"));
       }
 
       await refreshEngineDoctor();
     } catch (e) {
       const message = e instanceof Error ? e.message : safeStringify(e);
-      options.setError(addOpencodeCacheHint(message));
+      options.setError(addOpencodeCacheHint(message, t));
     } finally {
       options.setBusy(false);
       options.setBusyLabel(null);
@@ -552,7 +553,7 @@ export function createWorkspaceStore(options: {
       await persistAuthorizedRoots(roots);
     } catch (e) {
       const message = e instanceof Error ? e.message : safeStringify(e);
-      options.setError(addOpencodeCacheHint(message));
+      options.setError(addOpencodeCacheHint(message, t));
     }
   }
 
@@ -560,7 +561,7 @@ export function createWorkspaceStore(options: {
     if (!isTauriRuntime()) return;
 
     try {
-      const selection = await pickDirectory({ title: t("onboarding.authorize_folder", currentLocale()) });
+      const selection = await pickDirectory({ title: t("onboarding.authorize_folder") });
       const folder =
         typeof selection === "string" ? selection : Array.isArray(selection) ? selection[0] : null;
       if (!folder) return;
@@ -573,7 +574,7 @@ export function createWorkspaceStore(options: {
       }
     } catch (e) {
       const message = e instanceof Error ? e.message : safeStringify(e);
-      options.setError(addOpencodeCacheHint(message));
+      options.setError(addOpencodeCacheHint(message, t));
     }
   }
 
@@ -585,7 +586,7 @@ export function createWorkspaceStore(options: {
       await persistAuthorizedRoots(roots);
     } catch (e) {
       const message = e instanceof Error ? e.message : safeStringify(e);
-      options.setError(addOpencodeCacheHint(message));
+      options.setError(addOpencodeCacheHint(message, t));
     }
   }
 

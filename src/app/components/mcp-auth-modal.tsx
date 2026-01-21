@@ -4,7 +4,7 @@ import Button from "./button";
 import type { Client } from "../types";
 import type { McpDirectoryInfo } from "../constants";
 import { unwrap } from "../lib/opencode";
-import { t, type Language } from "../../i18n";
+import { useI18n, type Locale } from "../../i18n";
 
 export type McpAuthModalProps = {
   open: boolean;
@@ -14,12 +14,13 @@ export type McpAuthModalProps = {
   client: Client | null;
   entry: McpDirectoryInfo | null;
   projectDir: string;
-  language: Language;
+  language: Locale;
 };
 
 export default function McpAuthModal(props: McpAuthModalProps) {
+  const [t] = useI18n();
   const translate = (key: string, replacements?: Record<string, string>) => {
-    let result = t(key, props.language);
+    let result = t(key);
     if (replacements) {
       Object.entries(replacements).forEach(([placeholder, value]) => {
         result = result.replace(`{${placeholder}}`, value);
@@ -174,7 +175,7 @@ export default function McpAuthModal(props: McpAuthModalProps) {
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-6">
             <div>
               <h2 class="text-lg font-semibold text-gray-12">
-                  {translate("mcp.auth.connect_server", { server: serverName() })}
+                {translate("mcp.auth.connect_server", { server: serverName() })}
               </h2>
               <p class="text-sm text-gray-11">{translate("mcp.auth.open_browser_signin")}</p>
             </div>
@@ -202,14 +203,14 @@ export default function McpAuthModal(props: McpAuthModalProps) {
                     <CheckCircle2 size={24} class="text-green-11" />
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-gray-12">Already Connected</p>
+                    <p class="text-sm font-medium text-gray-12">{translate("mcp.auth.already_connected_title")}</p>
                     <p class="text-xs text-gray-11">
-                        {translate("mcp.auth.already_connected_description", { server: serverName() })}
+                      {translate("mcp.auth.already_connected_description", { server: serverName() })}
                     </p>
                   </div>
                 </div>
                 <p class="text-xs text-gray-10">
-                    {translate("mcp.auth.configured_previously")}
+                  {translate("mcp.auth.configured_previously")}
                 </p>
               </div>
             </Show>
@@ -217,7 +218,7 @@ export default function McpAuthModal(props: McpAuthModalProps) {
             <Show when={error()}>
               <div class="bg-red-7/10 border border-red-7/20 rounded-xl p-4 space-y-3">
                 <p class="text-sm text-red-11">{error()}</p>
-                
+
                 <Show when={needsReload()}>
                   <div class="flex flex-wrap gap-2 pt-2">
                     <Show when={props.onReloadEngine}>
@@ -249,9 +250,9 @@ export default function McpAuthModal(props: McpAuthModalProps) {
                     1
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-gray-12">Opening your browser</p>
+                    <p class="text-sm font-medium text-gray-12">{translate("mcp.auth.step1_title")}</p>
                     <p class="text-xs text-gray-10 mt-1">
-                        {translate("mcp.auth.step1_description", { server: serverName() })}
+                      {translate("mcp.auth.step1_description", { server: serverName() })}
                     </p>
                   </div>
                 </div>
@@ -261,9 +262,9 @@ export default function McpAuthModal(props: McpAuthModalProps) {
                     2
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-gray-12">Authorize OpenWork</p>
+                    <p class="text-sm font-medium text-gray-12">{translate("mcp.auth.step2_title")}</p>
                     <p class="text-xs text-gray-10 mt-1">
-                        {translate("mcp.auth.step2_description")}
+                      {translate("mcp.auth.step2_description")}
                     </p>
                   </div>
                 </div>
@@ -273,16 +274,16 @@ export default function McpAuthModal(props: McpAuthModalProps) {
                     3
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-gray-12">Return here when you're done</p>
+                    <p class="text-sm font-medium text-gray-12">{translate("mcp.auth.step3_title")}</p>
                     <p class="text-xs text-gray-10 mt-1">
-                        {translate("mcp.auth.step3_description")}
+                      {translate("mcp.auth.step3_description")}
                     </p>
                   </div>
                 </div>
               </div>
 
               <div class="rounded-xl border border-gray-6/60 bg-gray-1/40 p-4 text-sm text-gray-11">
-                  {translate("mcp.auth.waiting_authorization")}
+                {translate("mcp.auth.waiting_authorization")}
               </div>
             </Show>
           </div>

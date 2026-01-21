@@ -22,7 +22,7 @@ import {
   TriangleAlert,
 } from "lucide-solid";
 import TextInput from "../components/text-input";
-import { currentLocale, t, type Language } from "../../i18n";
+import { useI18n, type Locale } from "../../i18n";
 
 export type McpViewProps = {
   mode: "host" | "client" | null;
@@ -57,26 +57,27 @@ const statusBadge = (status: "connected" | "needs_auth" | "needs_client_registra
   }
 };
 
-const statusLabel = (status: "connected" | "needs_auth" | "needs_client_registration" | "failed" | "disabled" | "disconnected", locale: Language) => {
+const statusLabel = (status: "connected" | "needs_auth" | "needs_client_registration" | "failed" | "disabled" | "disconnected", t: any) => {
   switch (status) {
     case "connected":
-      return t("mcp.connected_label", locale);
+      return t("mcp.connected_label");
     case "needs_auth":
-      return t("mcp.needs_auth", locale);
+      return t("mcp.needs_auth");
     case "needs_client_registration":
-      return t("mcp.register_client", locale);
+      return t("mcp.register_client");
     case "disabled":
-      return t("mcp.status_disabled", locale);
+      return t("mcp.status_disabled");
     case "disconnected":
-      return t("mcp.disconnected", locale);
+      return t("mcp.disconnected");
     default:
-      return t("mcp.failed", locale);
+      return t("mcp.failed");
   }
 };
 
 export default function McpView(props: McpViewProps) {
   // Translation helper that uses current language from i18n
-  const translate = (key: string) => t(key, currentLocale());
+  const [t] = useI18n();
+  const translate = (key: string) => t(key);
   const [showDangerousContent, setShowDangerousContent] = createSignal(true);
 
   const [configScope, setConfigScope] = createSignal<"project" | "global">("project");
@@ -244,7 +245,7 @@ export default function McpView(props: McpViewProps) {
                 <div class="text-xs text-gray-10 text-right">
                   <div>{props.mcpServers.length} {translate("mcp.configured")}</div>
                   <Show when={props.mcpLastUpdatedAt}>
-                    <div>{translate("mcp.updated")} {formatRelativeTime(props.mcpLastUpdatedAt ?? Date.now())}</div>
+                    <div>{translate("mcp.updated")} {formatRelativeTime(props.mcpLastUpdatedAt ?? Date.now(), translate)}</div>
                   </Show>
                 </div>
               </div>
@@ -314,7 +315,7 @@ export default function McpView(props: McpViewProps) {
                             {(status) => (
                               <Show when={status().status !== "connected"}>
                                 <div class={`text-[11px] px-2 py-1 rounded-full border ${statusBadge(status().status)}`}>
-                                  {statusLabel(status().status, currentLocale())}
+                                  {statusLabel(status().status, t)}
                                 </div>
                               </Show>
                             )}
@@ -354,11 +355,10 @@ export default function McpView(props: McpViewProps) {
                       return (
                         <button
                           type="button"
-                          class={`text-left rounded-2xl border px-4 py-3 transition-all ${
-                            props.selectedMcp === entry.name
-                              ? "border-gray-8 bg-gray-2/70"
-                              : "border-gray-6/70 bg-gray-1/40 hover:border-gray-7"
-                          }`}
+                          class={`text-left rounded-2xl border px-4 py-3 transition-all ${props.selectedMcp === entry.name
+                            ? "border-gray-8 bg-gray-2/70"
+                            : "border-gray-6/70 bg-gray-1/40 hover:border-gray-7"
+                            }`}
                           onClick={() => props.setSelectedMcp(entry.name)}
                         >
                           <div class="flex items-center justify-between gap-3">
@@ -369,7 +369,7 @@ export default function McpView(props: McpViewProps) {
                               </div>
                             </div>
                             <div class={`text-[11px] px-2 py-1 rounded-full border ${statusBadge(status)}`}>
-                              {statusLabel(status, currentLocale())}
+                              {statusLabel(status, t)}
                             </div>
                           </div>
                         </button>
@@ -401,21 +401,19 @@ export default function McpView(props: McpViewProps) {
 
               <div class="flex items-center gap-2">
                 <button
-                  class={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                    configScope() === "project"
-                      ? "bg-gray-12/10 text-gray-12 border-gray-6/30"
-                      : "text-gray-10 border-gray-6 hover:text-gray-12"
-                  }`}
+                  class={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${configScope() === "project"
+                    ? "bg-gray-12/10 text-gray-12 border-gray-6/30"
+                    : "text-gray-10 border-gray-6 hover:text-gray-12"
+                    }`}
                   onClick={() => setConfigScope("project")}
                 >
                   {translate("mcp.scope_project")}
                 </button>
                 <button
-                  class={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                    configScope() === "global"
-                      ? "bg-gray-12/10 text-gray-12 border-gray-6/30"
-                      : "text-gray-10 border-gray-6 hover:text-gray-12"
-                  }`}
+                  class={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${configScope() === "global"
+                    ? "bg-gray-12/10 text-gray-12 border-gray-6/30"
+                    : "text-gray-10 border-gray-6 hover:text-gray-12"
+                    }`}
                   onClick={() => setConfigScope("global")}
                 >
                   {translate("mcp.scope_global")}
@@ -494,7 +492,7 @@ export default function McpView(props: McpViewProps) {
                               : "disconnected";
                         return (
                           <span class={`inline-flex items-center gap-2 text-[11px] px-2 py-1 rounded-full border ${statusBadge(status)}`}>
-                            {statusLabel(status, currentLocale())}
+                            {statusLabel(status, t)}
                           </span>
                         );
                       })()}

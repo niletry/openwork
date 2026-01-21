@@ -1,7 +1,7 @@
 import { For, Show } from "solid-js";
 
 import { CheckCircle2, Circle, Search, X } from "lucide-solid";
-import { t, currentLocale } from "../../i18n";
+import { useI18n } from "../../i18n";
 
 import Button from "./button";
 import { modelEquals } from "../utils";
@@ -20,7 +20,8 @@ export type ModelPickerModalProps = {
 };
 
 export default function ModelPickerModal(props: ModelPickerModalProps) {
-  const translate = (key: string) => t(key, currentLocale());
+  const [t] = useI18n();
+  const translate = (key: string) => t(key);
 
   return (
     <Show when={props.open}>
@@ -30,10 +31,10 @@ export default function ModelPickerModal(props: ModelPickerModalProps) {
             <div class="flex items-start justify-between gap-4">
               <div>
                 <h3 class="text-lg font-semibold text-gray-12">
-                  {props.target === "default" ? translate("settings.default_model") : translate("settings.session_model")}
+                  {props.target === "default" ? translate("settings.model_picker.title_default") : translate("settings.model_picker.title_session")}
                 </h3>
                 <p class="text-sm text-gray-11 mt-1">
-                  {props.target === "default" ? translate("settings.model_description_default") : translate("settings.model_description_session")}
+                  {props.target === "default" ? translate("settings.model_picker.desc_default") : translate("settings.model_picker.desc_session")}
                 </p>
               </div>
               <Button variant="ghost" class="!p-2 rounded-full" onClick={props.onClose}>
@@ -48,13 +49,13 @@ export default function ModelPickerModal(props: ModelPickerModalProps) {
                   type="text"
                   value={props.query}
                   onInput={(e) => props.setQuery(e.currentTarget.value)}
-                  placeholder={translate("settings.search_models")}
+                  placeholder={translate("settings.model_picker.search_placeholder")}
                   class="w-full bg-gray-1/40 border border-gray-6 rounded-xl py-2.5 pl-9 pr-3 text-sm text-gray-12 placeholder-gray-6 focus:outline-none focus:ring-1 focus:ring-gray-8 focus:border-gray-8"
                 />
               </div>
               <Show when={props.query.trim()}>
                 <div class="mt-2 text-xs text-gray-10">
-                  {translate("settings.showing_models").replace("{count}", String(props.filteredOptions.length)).replace("{total}", String(props.options.length))}
+                  {translate("settings.model_picker.showing").replace("{count}", String(props.filteredOptions.length)).replace("{total}", String(props.options.length))}
                 </div>
               </Show>
             </div>
@@ -70,11 +71,10 @@ export default function ModelPickerModal(props: ModelPickerModalProps) {
 
                   return (
                     <button
-                      class={`w-full text-left rounded-2xl border px-4 py-3 transition-colors ${
-                        active()
-                          ? "border-gray-6/20 bg-gray-12/5"
-                          : "border-gray-6/70 bg-gray-1/40 hover:bg-gray-1/60"
-                      }`}
+                      class={`w-full text-left rounded-2xl border px-4 py-3 transition-colors ${active()
+                        ? "border-gray-6/20 bg-gray-12/5"
+                        : "border-gray-6/70 bg-gray-1/40 hover:bg-gray-1/60"
+                        }`}
                       onClick={() =>
                         props.onSelect({
                           providerID: opt.providerID,
@@ -112,7 +112,7 @@ export default function ModelPickerModal(props: ModelPickerModalProps) {
 
             <div class="mt-5 flex justify-end shrink-0">
               <Button variant="outline" onClick={props.onClose}>
-                {translate("settings.done")}
+                {translate("settings.model_picker.done")}
               </Button>
             </div>
           </div>

@@ -1,5 +1,7 @@
-/**
- * Re-export all translation files for convenience
- */
-export { default as en } from "./en";
-export { default as zh } from "./zh";
+import { dict as en } from "./en";
+import { dict as zh } from "./zh";
+
+export type Locale = "en" | "zh";
+export type Dictionary = typeof en;
+
+export const dictionaries = { en, zh };

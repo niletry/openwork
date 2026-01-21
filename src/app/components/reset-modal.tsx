@@ -1,7 +1,7 @@
 import { Match, Show, Switch } from "solid-js";
 
 import { X } from "lucide-solid";
-import { t, currentLocale, type Language } from "../../i18n";
+import { useI18n, type Locale } from "../../i18n";
 
 import Button from "./button";
 import TextInput from "./text-input";
@@ -13,14 +13,15 @@ export type ResetModalProps = {
   busy: boolean;
   canReset: boolean;
   hasActiveRuns: boolean;
-  language: Language;
+  language: Locale;
   onClose: () => void;
   onConfirm: () => void;
   onTextChange: (value: string) => void;
 };
 
 export default function ResetModal(props: ResetModalProps) {
-  const translate = (key: string) => t(key, props.language);
+  const [t] = useI18n();
+  const translate = (key: string) => t(key);
 
   return (
     <Show when={props.open}>

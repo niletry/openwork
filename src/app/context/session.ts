@@ -1,5 +1,6 @@
 import { batch, createEffect, createMemo, createSignal, onCleanup } from "solid-js";
 import { createStore, produce, reconcile } from "solid-js/store";
+import { useI18n } from "../../i18n";
 
 import type { Message, Part, Session } from "@opencode-ai/sdk/v2/client";
 
@@ -102,12 +103,13 @@ export function createSessionStore(options: {
     pendingPermissions: [],
     events: [],
   });
+  const [t] = useI18n();
   const [permissionReplyBusy, setPermissionReplyBusy] = createSignal(false);
 
   const addError = (error: unknown, fallback = "Unknown error") => {
     const message = error instanceof Error ? error.message : fallback;
     if (!message) return;
-    options.setError(addOpencodeCacheHint(message));
+    options.setError(addOpencodeCacheHint(message, t));
   };
 
   const withTimeout = async <T,>(promise: Promise<T>, ms: number, label: string) => {

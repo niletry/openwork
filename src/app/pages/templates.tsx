@@ -5,6 +5,7 @@ import { formatRelativeTime } from "../utils";
 
 import Button from "../components/button";
 import { FileText, Play, Plus, Trash2 } from "lucide-solid";
+import { useI18n } from "../../i18n";
 
 export type TemplatesViewProps = {
   busy: boolean;
@@ -21,6 +22,8 @@ export type TemplatesViewProps = {
 };
 
 export default function TemplatesView(props: TemplatesViewProps) {
+  const [t] = useI18n();
+
   const openNewTemplate = () => {
     const reset = props.resetTemplateDraft;
     if (reset) {
@@ -37,10 +40,10 @@ export default function TemplatesView(props: TemplatesViewProps) {
   return (
     <section class="space-y-4">
       <div class="flex items-center justify-between">
-        <h3 class="text-sm font-medium text-gray-11 uppercase tracking-wider">Templates</h3>
+        <h3 class="text-sm font-medium text-gray-11 uppercase tracking-wider">{t("templates.title")}</h3>
         <Button variant="secondary" onClick={openNewTemplate} disabled={props.busy}>
           <Plus size={16} />
-          New
+          {t("templates.new")}
         </Button>
       </div>
 
@@ -48,31 +51,31 @@ export default function TemplatesView(props: TemplatesViewProps) {
         when={props.workspaceTemplates.length || props.globalTemplates.length}
         fallback={
           <div class="bg-gray-2/30 border border-gray-6/50 rounded-2xl p-6 text-sm text-gray-10">
-            Starter templates will appear here. Create one or save from a session.
+            {t("templates.empty_state")}
           </div>
         }
       >
         <div class="space-y-6">
           <Show when={props.workspaceTemplates.length}>
             <div class="space-y-3">
-              <div class="text-xs font-semibold text-gray-10 uppercase tracking-wider">Workspace</div>
+              <div class="text-xs font-semibold text-gray-10 uppercase tracking-wider">{t("templates.group_workspace")}</div>
               <For each={props.workspaceTemplates}>
-                {(t) => (
+                {(template) => (
                   <div class="bg-gray-2/30 border border-gray-6/50 rounded-2xl p-5 flex items-start justify-between gap-4">
                     <div class="min-w-0">
                       <div class="flex items-center gap-2">
                         <FileText size={16} class="text-indigo-11" />
-                        <div class="font-medium text-gray-12 truncate">{t.title}</div>
+                        <div class="font-medium text-gray-12 truncate">{template.title}</div>
                       </div>
-                      <div class="mt-1 text-sm text-gray-10">{t.description || ""}</div>
-                      <div class="mt-2 text-xs text-gray-7 font-mono">{formatRelativeTime(t.createdAt)}</div>
+                      <div class="mt-1 text-sm text-gray-10">{template.description || ""}</div>
+                      <div class="mt-2 text-xs text-gray-7 font-mono">{formatRelativeTime(template.createdAt, t)}</div>
                     </div>
                     <div class="shrink-0 flex gap-2">
-                      <Button variant="secondary" onClick={() => props.runTemplate(t)} disabled={props.busy}>
+                      <Button variant="secondary" onClick={() => props.runTemplate(template)} disabled={props.busy}>
                         <Play size={16} />
-                        Run
+                        {t("templates.run")}
                       </Button>
-                      <Button variant="danger" onClick={() => props.deleteTemplate(t.id)} disabled={props.busy}>
+                      <Button variant="danger" onClick={() => props.deleteTemplate(template.id)} disabled={props.busy}>
                         <Trash2 size={16} />
                       </Button>
                     </div>
@@ -84,24 +87,24 @@ export default function TemplatesView(props: TemplatesViewProps) {
 
           <Show when={props.globalTemplates.length}>
             <div class="space-y-3">
-              <div class="text-xs font-semibold text-gray-10 uppercase tracking-wider">Global</div>
+              <div class="text-xs font-semibold text-gray-10 uppercase tracking-wider">{t("templates.group_global")}</div>
               <For each={props.globalTemplates}>
-                {(t) => (
+                {(template) => (
                   <div class="bg-gray-2/30 border border-gray-6/50 rounded-2xl p-5 flex items-start justify-between gap-4">
                     <div class="min-w-0">
                       <div class="flex items-center gap-2">
                         <FileText size={16} class="text-green-11" />
-                        <div class="font-medium text-gray-12 truncate">{t.title}</div>
+                        <div class="font-medium text-gray-12 truncate">{template.title}</div>
                       </div>
-                      <div class="mt-1 text-sm text-gray-10">{t.description || ""}</div>
-                      <div class="mt-2 text-xs text-gray-7 font-mono">{formatRelativeTime(t.createdAt)}</div>
+                      <div class="mt-1 text-sm text-gray-10">{template.description || ""}</div>
+                      <div class="mt-2 text-xs text-gray-7 font-mono">{formatRelativeTime(template.createdAt, t)}</div>
                     </div>
                     <div class="shrink-0 flex gap-2">
-                      <Button variant="secondary" onClick={() => props.runTemplate(t)} disabled={props.busy}>
+                      <Button variant="secondary" onClick={() => props.runTemplate(template)} disabled={props.busy}>
                         <Play size={16} />
-                        Run
+                        {t("templates.run")}
                       </Button>
-                      <Button variant="danger" onClick={() => props.deleteTemplate(t.id)} disabled={props.busy}>
+                      <Button variant="danger" onClick={() => props.deleteTemplate(template.id)} disabled={props.busy}>
                         <Trash2 size={16} />
                       </Button>
                     </div>
